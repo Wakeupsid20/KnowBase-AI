@@ -3,6 +3,8 @@ import shutil
 
 from fastapi import APIRouter, UploadFile, File
 
+from app.services.document_service import extract_text_from_pdf
+
 router = APIRouter(
     prefix="/documents",
     tags=["Documents"],
@@ -23,7 +25,11 @@ async def upload_document(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
+    result = extract_text_from_pdf(file_path)
+
     return {
         "filename": file.filename,
-        "path": file_path,
+        "pages": result["pages"],
+        "characters": result["characters"],
+        "preview": result["text"][:500],
     }
